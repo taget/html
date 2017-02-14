@@ -2,35 +2,34 @@ package main
 
 import (
 	"log"
-    "time"
 	"net/http"
 	"text/template"
+	"time"
 
-    "github.com/gorilla/schema"
 	"github.com/emicklei/go-restful"
+	"github.com/gorilla/schema"
 )
 
-// This example shows how to serve a HTML page using the standard Go template engine.
-//
-// GET http://localhost:8080/
-
 var decoder *schema.Decoder
+
 func main() {
-    decoder = schema.NewDecoder()
+	decoder = schema.NewDecoder()
 	ws := new(restful.WebService)
 	ws.Route(ws.GET("/").To(home))
-    ws.Route(ws.POST("/").Consumes("application/x-www-form-urlencoded").To(power))
+	ws.Route(ws.POST("/").Consumes("application/x-www-form-urlencoded").To(power))
 	restful.Add(ws)
 	print("open browser on http://localhost:8080/\n")
 	http.ListenAndServe(":8080", nil)
 }
 
+// Message passint go html template
 type Message struct {
 	Text string
 }
 
+// PowerState from the html form
 type PowerState struct {
-    Power string
+	Power string
 }
 
 func home(req *restful.Request, resp *restful.Response) {
@@ -45,22 +44,22 @@ func home(req *restful.Request, resp *restful.Response) {
 
 func power(req *restful.Request, resp *restful.Response) {
 
-    err := req.Request.ParseForm()
-    if err != nil {
-        resp.WriteErrorString(http.StatusBadRequest, err.Error())
-        return
-    }
+	err := req.Request.ParseForm()
+	if err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
 
-    po := new(PowerState)
-    err = decoder.Decode(po, req.Request.PostForm)
-    if err != nil {
-        resp.WriteErrorString(http.StatusBadRequest, err.Error())
-        return
-    }
+	po := new(PowerState)
+	err = decoder.Decode(po, req.Request.PostForm)
+	if err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
 
-    log.Printf("got <%s> ", po.Power)
+	log.Printf("got <%s> ", po.Power)
 
-    current := time.Now()
+	current := time.Now()
 	m := &Message{"I'v done power " + po.Power + " at " + current.Format(time.RFC3339)}
 	// you might want to cache compiled templates
 	t, err := template.ParseFiles("home.html")
